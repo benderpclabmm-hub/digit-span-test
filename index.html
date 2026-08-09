@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Digit Span Test</title>
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
+</head>
+
+
+<body>
+
+
+<div class="container">
+
+
+  <!-- =========================
+       IDENTITAS
+  ========================== -->
+
+  <div id="identity">
+
+    <h1>Digit Span Test</h1>
+
+    <p>
+      Silakan isi nama dan kelas
+      sebelum memulai test.
+    </p>
+
+
+    <input
+      type="text"
+      id="studentName"
+      placeholder="Masukkan Nama"
+    >
+
+
+    <br>
+
+
+    <input
+      type="text"
+      id="studentClass"
+      placeholder="Masukkan Kelas"
+    >
+
+
+    <br>
+
+
+    <div
+      id="identityError"
+      class="error"
+    ></div>
+
+
+    <button onclick="submitIdentity()">
+      Lanjut
+    </button>
+
+  </div>
+
+
+
+  <!-- =========================
+       INSTRUCTION
+  ========================== -->
+
+  <div
+    id="instruction"
+    class="hidden"
+  >
+
+    <h1>Digit Span Test</h1>
+
+    <p>
+      Tes ini digunakan untuk mengukur
+      kemampuan memori jangka pendek.
+    </p>
+
+
+    <button onclick="startTest()">
+      Mulai Test
+    </button>
+
+  </div>
+
+
+
+  <!-- =========================
+       FORWARD INTRO
+  ========================== -->
+
+  <div
+    id="forwardIntro"
+    class="hidden"
+  >
+
+    <h2>Forward Digit Span</h2>
+
+    <p>
+      Masukkan angka sesuai dengan
+      urutan yang ditampilkan.
+    </p>
+
+
+    <button onclick="startForwardTest()">
+      Mulai Forward Test
+    </button>
+
+  </div>
+
+
+
+  <!-- =========================
+       BACKWARD INTRO
+  ========================== -->
+
+  <div
+    id="backwardIntro"
+    class="hidden"
+  >
+
+    <h2>Backward Digit Span</h2>
+
+    <p>
+      Masukkan angka dengan
+      urutan terbalik.
+    </p>
+
+
+    <button onclick="startBackwardTest()">
+      Mulai Backward Test
+    </button>
+
+  </div>
+
+
+
+  <!-- =========================
+       TEST
+  ========================== -->
+
+  <div
+    id="test"
+    class="hidden"
+  >
+
+    <h2 id="mode"></h2>
+
+    <h3 id="level"></h3>
+
+    <p
+      id="trialInfo"
+      class="info"
+    ></p>
+
+    <p
+      id="timer"
+      class="info"
+    ></p>
+
+    <p
+      id="note"
+      class="info"
+    ></p>
+
+
+    <div
+      id="warning"
+      class="warning"
+    ></div>
+
+
+    <div
+      id="digit"
+      class="digit"
+    ></div>
+
+
+    <div
+      id="inputArea"
+      class="hidden"
+    >
+
+      <input
+        type="text"
+        id="answer"
+        placeholder="Masukkan jawaban"
+        inputmode="numeric"
+        pattern="[0-9]*"
+        oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+      />
+
+
+      <br>
+
+
+      <button onclick="submitAnswer()">
+        Submit
+      </button>
+
+    </div>
+
+
+    <div
+      id="feedback"
+      class="feedback"
+    ></div>
+
+  </div>
+
+
+
+  <!-- =========================
+       RESULT
+  ========================== -->
+
+  <div
+    id="result"
+    class="hidden"
+  >
+
+    <h1>Hasil Test</h1>
+
+
+    <div class="student-result">
+
+      <p>
+        <strong>Nama:</strong>
+        <span id="resultName"></span>
+      </p>
+
+
+      <p>
+        <strong>Kelas:</strong>
+        <span id="resultClass"></span>
+      </p>
+
+    </div>
+
+
+    <div class="result-box">
+
+      <h3 id="forwardResult"></h3>
+
+    </div>
+
+
+    <div class="result-box">
+
+      <h3 id="backwardResult"></h3>
+
+    </div>
+
+
+    <div class="result-box">
+
+      <h3 id="totalResult"></h3>
+
+    </div>
+
+
+    <p
+      id="saveStatus"
+      class="save-status"
+    >
+      Menyimpan hasil...
+    </p>
+
+  </div>
+
+
+</div>
+
+
+
+<!-- ==================================================
+     FIREBASE
+=================================================== -->
+
+<script type="module">
+
+  import {
+    initializeApp
+  }
+  from
+  "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+
+
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    serverTimestamp
+  }
+  from
+  "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+
+  // =================================================
+  // FIREBASE CONFIG
+  // =================================================
+
+  const firebaseConfig = {
+
+    apiKey: "AIzaSyDWPv1eHBJ8l3Z6g_Ti1cHZLHFY759UE6k",
+    authDomain: "tes-digit-span.firebaseapp.com",
+    projectId: "tes-digit-span",
+    storageBucket: "tes-digit-span.firebasestorage.app",
+    messagingSenderId: "815711240131",
+    appId: "1:815711240131:web:c6df500eab0947c9a2c776",
+    measurementId: "G-61D19S7Z5D"
+
+  };
+
+
+  // =================================================
+  // INITIALIZE FIREBASE
+  // =================================================
+
+  const app =
+    initializeApp(firebaseConfig);
+
+
+  // =================================================
+  // INITIALIZE FIRESTORE
+  // =================================================
+
+  const db =
+    getFirestore(app);
+
+
+  // =================================================
+  // SIMPAN KE WINDOW
+  // =================================================
+
+  window.firebaseDB = db;
+
+  window.firebaseCollection =
+    collection;
+
+  window.firebaseAddDoc =
+    addDoc;
+
+  window.firebaseServerTimestamp =
+    serverTimestamp;
+
+</script>
+
+
+<script src="script.js"></script>
+
+
+</body>
+
+</html>
